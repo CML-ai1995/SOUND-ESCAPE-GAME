@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Sound Vault - Cyber Articulation Escape</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #0B0F19;
+            color: #E2E8F0;
+        }
+
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Glowing Neon Effects */
+        .neon-glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(6, 182, 212, 0.2);
+            border-color: #06B6D4;
+        }
+        
+        .neon-glow-purple {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 10px rgba(168, 85, 247, 0.2);
+            border-color: #A855F7;
+        }
+
+        .neon-text-cyan {
+            text-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+        }
+
+        .neon-text-purple {
+            text-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+        }
+
+        .cyber-grid {
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* Pulsing recording indicator */
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.08); }
+        }
+        .recording-pulse {
+            animation: pulse-red 1.2s infinite ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #06B6D4;
+        }
+    </style>
+</head>
+<body class="cyber-grid min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+
+    <!-- Top Header / HUD Bar -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-vault text-2xl text-cyan-400"></i>
+                <h1 class="font-orbitron font-extrabold text-xl sm:text-2xl tracking-wider text-white">
+                    SOUND<span class="text-cyan-400">VAULT</span> <span class="text-xs text-purple-400 font-sans border border-purple-500/40 px-2 py-0.5 rounded-full ml-2">/r/ ARTICULATION</span>
+                </h1>
+            </div>
+
+            <!-- Timer & Level Tracker -->
+            <div class="flex items-center gap-6">
+                <div class="bg-slate-900 border border-slate-700 px-4 py-1.5 rounded-lg flex items-center gap-2">
+                    <i class="fa-regular fa-clock text-cyan-400"></i>
+                    <span id="timer-display" class="font-orbitron font-bold text-lg text-cyan-300">00:00</span>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 font-bold uppercase tracking-widest hidden sm:inline">Locks:</span>
+                    <div id="vault-status-indicators" class="flex gap-2">
+                        <span id="ind-stage1" title="Initial /r/" class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center text-xs font-bold text-slate-400">1</span>
+                        <span id="ind-stage2" title="Medial /r/" class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center text-xs font-bold text-slate-400">2</span>
+                        <span id="ind-stage3" title="Final /r/" class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center text-xs font-bold text-slate-400">3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-5xl mx-auto w-full p-4 sm:p-6 flex-grow flex flex-col justify-center">
+
+        <!-- SCREEN 0: Briefing / Welcome -->
+        <section id="screen-welcome" class="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-6 sm:p-10 backdrop-blur shadow-2xl">
+            <div class="text-center max-w-2xl mx-auto space-y-6">
+                <div class="inline-block p-4 rounded-full bg-cyan-950/60 border border-cyan-500/50 text-cyan-400 text-4xl mb-2">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h2 class="font-orbitron text-3xl sm:text-4xl font-extrabold text-white tracking-wide">
+                    MISSION BRIEFING: <span class="neon-text-cyan text-cyan-400">ESCAPE THE LAB</span>
+                </h2>
+                <p class="text-slate-300 text-base sm:text-lg leading-relaxed">
+                    You are locked inside the <span class="text-cyan-300 font-semibold">Sound Vault Quantum Lab</span>. To override the 3 security containment locks, you must accurately pronounce and decode vocal key-phrases targeting the <span class="text-purple-400 font-bold font-orbitron">/r/ SOUND</span> across three security zones:
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left my-6">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <div class="text-cyan-400 font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-lock"></i> Zone 1</div>
+                        <div class="font-orbitron text-sm text-white">Initial /r/</div>
+                        <div class="text-xs text-slate-400 mt-1">Start of words (e.g. Rocket, Radar)</div>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <div class="text-purple-400 font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-lock"></i> Zone 2</div>
+                        <div class="font-orbitron text-sm text-white">Medial /r/</div>
+                        <div class="text-xs text-slate-400 mt-1">Middle of words (e.g. Hero, Mirror)</div>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <div class="text-emerald-400 font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-lock"></i> Zone 3</div>
+                        <div class="font-orbitron text-sm text-white">Final /r/</div>
+                        <div class="text-xs text-slate-400 mt-1">End of words (e.g. Star, Guitar)</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/80 border border-slate-800 p-4 rounded-xl flex items-center justify-between text-left">
+                    <div>
+                        <div class="text-sm font-bold text-white">Speech Mode Option</div>
+                        <div class="text-xs text-slate-400">Choose your practice target level:</div>
+                    </div>
+                    <div class="flex bg-slate-900 p-1 rounded-lg border border-slate-700">
+                        <button id="btn-mode-words" class="px-3 py-1.5 text-xs font-bold rounded-md bg-cyan-500 text-slate-950 transition-all">Single Words</button>
+                        <button id="btn-mode-sentences" class="px-3 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all">Sentences</button>
+                    </div>
+                </div>
+
+                <button id="btn-start-game" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-orbitron font-extrabold text-lg rounded-xl shadow-lg hover:shadow-cyan-500/50 transition-all transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-key mr-2"></i> INITIATE DECRYPTION
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 1: Game Room (Dynamic Stage Container) -->
+        <section id="screen-gameplay" class="hidden space-y-6">
+            
+            <!-- Stage Header Banner -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-bold tracking-widest text-cyan-400 uppercase">
+                        <i class="fa-solid fa-shield-halved"></i> Security Sector <span id="current-sector-num">1</span>/3
+                    </div>
+                    <h2 id="current-sector-title" class="font-orbitron text-2xl font-bold text-white mt-1">
+                        INITIAL /R/ TERMINAL
+                    </h2>
+                </div>
+
+                <!-- Speech Audio Utility Console -->
+                <div class="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 w-full md:w-auto justify-between">
+                    <div class="flex items-center gap-2">
+                        <button id="btn-listen-prompt" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 transition-colors" title="Listen to Model Pronunciation">
+                            <i class="fa-solid fa-volume-high text-lg"></i>
+                        </button>
+                        <button id="btn-record-audio" class="p-2 rounded-lg bg-slate-800 hover:bg-red-950/80 hover:text-red-400 text-slate-300 transition-colors relative" title="Practice Speaking / Record Self">
+                            <i class="fa-solid fa-microphone text-lg"></i>
+                            <span id="record-dot" class="hidden absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 recording-pulse"></span>
+                        </button>
+                    </div>
+                    <div id="speech-feedback-badge" class="text-xs font-semibold text-slate-400 px-2 py-1 rounded bg-slate-900 border border-slate-800">
+                        Speech Assist Ready
+                    </div>
+                </div>
+            </div>
+
+            <!-- Puzzle Main Stage Box -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 backdrop-blur shadow-2xl relative">
+                
+                <!-- STAGE 1 CONTENT: INITIAL /R/ MATRIX -->
+                <div id="stage-1-panel" class="stage-panel space-y-6">
+                    <div class="border-l-4 border-cyan-500 pl-4">
+                        <h3 class="font-orbitron text-xl font-bold text-cyan-300">STAGE 1: CIPHER MATRIX</h3>
+                        <p class="text-sm text-slate-400">Match all target Initial /r/ words or phrases to reveal the overriding 4-digit security code.</p>
+                    </div>
+
+                    <!-- Target Display Phrase -->
+                    <div class="bg-slate-950 p-4 rounded-xl border border-cyan-900/50 text-center">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Target Phrase to Pronounce</div>
+                        <div id="s1-target-text" class="text-lg sm:text-xl font-bold text-white font-orbitron neon-text-cyan">
+                            "The red rocket raced into the realm."
+                        </div>
+                    </div>
+
+                    <!-- Interactive Word Tile Selector / Cipher -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Select and Say the 4 Initial /R/ Target Clues in Order:</label>
+                        <div id="s1-tiles-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Keypad Lock Entry -->
+                    <div class="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-slate-400 uppercase font-bold">Keycode Output:</span>
+                            <div id="s1-code-display" class="font-orbitron text-2xl tracking-widest font-black text-cyan-400 bg-slate-950 px-4 py-1.5 rounded-lg border border-slate-800 min-w-[120px] text-center">
+                                ----
+                            </div>
+                        </div>
+                        <button id="s1-btn-submit" class="w-full sm:w-auto px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-orbitron font-bold rounded-xl transition-all">
+                            UNLOCK STAGE 1 <i class="fa-solid fa-unlock ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STAGE 2 CONTENT: MEDIAL /R/ CIRCUIT BOARD -->
+                <div id="stage-2-panel" class="stage-panel hidden space-y-6">
+                    <div class="border-l-4 border-purple-500 pl-4">
+                        <h3 class="font-orbitron text-xl font-bold text-purple-300">STAGE 2: CIRCUIT CONNECTOR</h3>
+                        <p class="text-sm text-slate-400">Locate the correct Medial /r/ words in the speech node matrix to bridge the circuit.</p>
+                    </div>
+
+                    <!-- Target Display Phrase -->
+                    <div class="bg-slate-950 p-4 rounded-xl border border-purple-900/50 text-center">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Target Speech Pattern</div>
+                        <div id="s2-target-text" class="text-lg sm:text-xl font-bold text-white font-orbitron neon-text-purple">
+                            "The camera captured the parrot in the forest."
+                        </div>
+                    </div>
+
+                    <!-- Logic / Speech Nodes -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tap Each Valid Medial /r/ Word Node and Practice Speaking:</label>
+                        <div id="s2-nodes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Passcode Entry -->
+                    <div class="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-400 uppercase font-bold">Node Power Status:</span>
+                            <span id="s2-power-status" class="text-sm font-orbitron font-bold text-purple-400">0/3 Activated</span>
+                        </div>
+                        <button id="s2-btn-submit" class="w-full sm:w-auto px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-orbitron font-bold rounded-xl transition-all">
+                            UNLOCK STAGE 2 <i class="fa-solid fa-bolt ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STAGE 3 CONTENT: FINAL /R/ OVERRIDE -->
+                <div id="stage-3-panel" class="stage-panel hidden space-y-6">
+                    <div class="border-l-4 border-emerald-500 pl-4">
+                        <h3 class="font-orbitron text-xl font-bold text-emerald-300">STAGE 3: MASTER CORE OVERRIDE</h3>
+                        <p class="text-sm text-slate-400">Decrypt Final /r/ terminal symbols and speak the master sequence to escape.</p>
+                    </div>
+
+                    <!-- Target Display Phrase -->
+                    <div class="bg-slate-950 p-4 rounded-xl border border-emerald-900/50 text-center">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Final Override Phrase</div>
+                        <div id="s3-target-text" class="text-lg sm:text-xl font-bold text-white font-orbitron text-emerald-400">
+                            "The star car drove through the open door."
+                        </div>
+                    </div>
+
+                    <!-- Final /r/ Audio / Puzzle Selection -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Match the Final /R/ Word Cards to their Cryptographic Pairs:</label>
+                        <div id="s3-cards-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Submit Final Lock -->
+                    <div class="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="text-xs text-slate-400">
+                            <i class="fa-solid fa-circle-info text-emerald-400 mr-1"></i> Clear all pairs to trigger vault release.
+                        </div>
+                        <button id="s3-btn-submit" class="w-full sm:w-auto px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-orbitron font-bold rounded-xl transition-all">
+                            RELEASE VAULT LOCKS <i class="fa-solid fa-key ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Feedback Message Banner -->
+            <div id="game-feedback-msg" class="hidden p-4 rounded-xl border text-sm font-semibold flex items-center gap-3">
+                <i id="feedback-icon" class="fa-solid fa-circle-exclamation text-lg"></i>
+                <span id="feedback-text">Message goes here</span>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: Certificate / Victory Screen -->
+        <section id="screen-victory" class="hidden bg-slate-900/90 border border-emerald-500/50 rounded-2xl p-6 sm:p-10 backdrop-blur shadow-2xl text-center space-y-6">
+            <div class="inline-block p-4 rounded-full bg-emerald-950/60 border border-emerald-500/50 text-emerald-400 text-5xl">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            
+            <div>
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest border border-emerald-500/30 px-3 py-1 rounded-full">VAULT OVERRIDDEN</span>
+                <h2 class="font-orbitron text-3xl sm:text-4xl font-black text-white mt-3">
+                    ESCAPE SUCCESSFUL!
+                </h2>
+                <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-lg mx-auto">
+                    You mastered the <span class="text-cyan-400 font-bold">Initial</span>, <span class="text-purple-400 font-bold">Medial</span>, and <span class="text-emerald-400 font-bold">Final /r/</span> sound security locks!
+                </p>
+            </div>
+
+            <!-- Certificate Card -->
+            <div id="certificate-card" class="bg-slate-950 border-2 border-emerald-500/40 p-6 rounded-2xl text-left max-w-xl mx-auto space-y-4 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-emerald-400 text-9xl">
+                    <i class="fa-solid fa-certificate"></i>
+                </div>
+                
+                <div class="flex justify-between items-start border-b border-slate-800 pb-3">
+                    <div>
+                        <div class="font-orbitron font-extrabold text-lg text-emerald-400">SPEECH ARTICULATION CERTIFICATE</div>
+                        <div class="text-xs text-slate-500">The Sound Vault Cyber-Lab Protocol</div>
+                    </div>
+                    <i class="fa-solid fa-award text-3xl text-emerald-400"></i>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-xs text-slate-500 block uppercase">Agent / Student:</span>
+                        <input id="student-name-input" type="text" placeholder="Enter Name Here" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white font-bold w-full focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-500 block uppercase">Completion Time:</span>
+                        <span id="final-time-display" class="font-orbitron font-bold text-emerald-400 text-base">00:00</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-500 block uppercase">Target Sound:</span>
+                        <span class="font-semibold text-slate-200">/r/ Phoneme Mastered</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-500 block uppercase">Practice Mode:</span>
+                        <span id="cert-mode-display" class="font-semibold text-slate-200">Words & Sentences</span>
+                    </div>
+                </div>
+
+                <div class="text-xs text-slate-400 pt-2 border-t border-slate-800 italic">
+                    "Demonstrated vocal proficiency in initial, medial, and final /r/ articulation positions."
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap justify-center gap-4 pt-2">
+                <button id="btn-restart-game" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-orbitron font-bold rounded-xl transition-all">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> REPLAY LAB
+                </button>
+                <button id="btn-print-cert" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-orbitron font-bold rounded-xl transition-all">
+                    <i class="fa-solid fa-print mr-2"></i> PRINT CERTIFICATE
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Hosting & Deployment Instructions Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950/90 py-6 px-4 mt-8 text-xs text-slate-400">
+        <div class="max-w-5xl mx-auto space-y-3">
+            <button id="btn-toggle-instructions" class="font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-2">
+                <i class="fa-solid fa-circle-question"></i> How to host this game live for free on GitHub Pages (for Wix website link)
+                <i class="fa-solid fa-chevron-down text-xs transition-transform" id="instruct-chevron"></i>
+            </button>
+            
+            <div id="instructions-panel" class="hidden space-y-2 bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-slate-300">
+                <p class="font-bold text-white text-sm">Step-by-Step Instructions to Deploy to GitHub Pages:</p>
+                <ol class="list-decimal list-inside space-y-1.5 ml-1">
+                    <li>Create a free account at <a href="https://github.com" target="_blank" class="text-cyan-400 underline">GitHub.com</a> if you don't have one.</li>
+                    <li>Click the <strong>"+"</strong> icon at the top right and select <strong>New repository</strong>.</li>
+                    <li>Name your repository (e.g., <code>sound-vault-r-escape</code>), make it <strong>Public</strong>, and click <strong>Create repository</strong>.</li>
+                    <li>Click <strong>uploading an existing file</strong>, save this code into a file named <code>index.html</code>, and drag/upload it into GitHub.</li>
+                    <li>Commit the file by clicking <strong>Commit changes</strong>.</li>
+                    <li>Go to <strong>Settings</strong> &gt; <strong>Pages</strong> (on the left menu).</li>
+                    <li>Under <em>Build and deployment</em> &gt; <em>Branch</em>, select <code>main</code> (or <code>master</code>) and click <strong>Save</strong>.</li>
+                    <li>Wait 1–2 minutes. GitHub will provide a live public URL (e.g., <code>https://yourusername.github.io/sound-vault-r-escape/</code>).</li>
+                    <li>Copy that live link and attach it to any button or link on your Wix website!</li>
+                </ol>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Target Words and Sentences Data
+        const gameData = {
+            mode: 'words', // 'words' or 'sentences'
+            stage: 1,
+            timerSeconds: 0,
+            timerInterval: null,
+            
+            stage1: {
+                words: [
+                    { word: 'Rocket', code: '4', initial: true },
+                    { word: 'Rabbit', code: '2', initial: true },
+                    { word: 'Ring', code: '9', initial: true },
+                    { word: 'Radar', code: '7', initial: true },
+                    { word: 'Lemon', code: 'X', initial: false },
+                    { word: 'Table', code: 'Y', initial: false }
+                ],
+                sentence: "The red rocket raced into the realm.",
+                correctSequence: ['Rocket', 'Rabbit', 'Ring', 'Radar'],
+                targetCode: "4297"
+            },
+
+            stage2: {
+                nodes: [
+                    { name: 'Camera', isMedial: true, text: 'Cam-e-ra' },
+                    { name: 'Parrot', isMedial: true, text: 'Par-rot' },
+                    { name: 'Mirror', isMedial: true, text: 'Mir-ror' },
+                    { name: 'Pencil', isMedial: false, text: 'Pen-cil' },
+                    { name: 'Dragon', isMedial: false, text: 'Dra-gon' }
+                ],
+                sentence: "The camera captured the parrot in the forest."
+            },
+
+            stage3: {
+                pairs: [
+                    { word: 'Car', icon: 'fa-car' },
+                    { word: 'Star', icon: 'fa-star' },
+                    { word: 'Door', icon: 'fa-door-open' },
+                    { word: 'Guitar', icon: 'fa-guitar' },
+                    { word: 'Tiger', icon: 'fa-cat' },
+                    { word: 'Tower', icon: 'fa-building' }
+                ],
+                sentence: "The star car drove through the open door."
+            }
+        };
+
+        let selectedS1Tiles = [];
+        let activatedS2Nodes = new Set();
+        let matchedS3Pairs = new Set();
+        let s3SelectedCard = null;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initEventListeners();
+            renderStage1Tiles();
+            renderStage2Nodes();
+            renderStage3Cards();
+        });
+
+        function initEventListeners() {
+            // Mode Selectors
+            document.getElementById('btn-mode-words').addEventListener('click', () => setMode('words'));
+            document.getElementById('btn-mode-sentences').addEventListener('click', () => setMode('sentences'));
+
+            // Start Game
+            document.getElementById('btn-start-game').addEventListener('click', startGame);
+
+            // Submits
+            document.getElementById('s1-btn-submit').addEventListener('click', checkStage1);
+            document.getElementById('s2-btn-submit').addEventListener('click', checkStage2);
+            document.getElementById('s3-btn-submit').addEventListener('click', checkStage3);
+
+            // Speech & Audio simulation
+            document.getElementById('btn-listen-prompt').addEventListener('click', speakCurrentTarget);
+            document.getElementById('btn-record-audio').addEventListener('click', toggleAudioRecording);
+
+            // Restart & Print
+            document.getElementById('btn-restart-game').addEventListener('click', resetGame);
+            document.getElementById('btn-print-cert').addEventListener('click', () => window.print());
+
+            // Footer instructions toggle
+            document.getElementById('btn-toggle-instructions').addEventListener('click', () => {
+                const panel = document.getElementById('instructions-panel');
+                const chevron = document.getElementById('instruct-chevron');
+                panel.classList.toggle('hidden');
+                chevron.classList.toggle('rotate-180');
+            });
+        }
+
+        function setMode(mode) {
+            gameData.mode = mode;
+            const btnW = document.getElementById('btn-mode-words');
+            const btnS = document.getElementById('btn-mode-sentences');
+
+            if (mode === 'words') {
+                btnW.className = 'px-3 py-1.5 text-xs font-bold rounded-md bg-cyan-500 text-slate-950 transition-all';
+                btnS.className = 'px-3 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all';
+                document.getElementById('cert-mode-display').textContent = 'Single Target Words';
+            } else {
+                btnS.className = 'px-3 py-1.5 text-xs font-bold rounded-md bg-cyan-500 text-slate-950 transition-all';
+                btnW.className = 'px-3 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all';
+                document.getElementById('cert-mode-display').textContent = 'Full Target Sentences';
+            }
+
+            updateTargetTexts();
+        }
+
+        function startGame() {
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-gameplay').classList.remove('hidden');
+            startTimer();
+            showStage(1);
+        }
+
+        function startTimer() {
+            gameData.timerSeconds = 0;
+            clearInterval(gameData.timerInterval);
+            gameData.timerInterval = setInterval(() => {
+                gameData.timerSeconds++;
+                const mins = String(Math.floor(gameData.timerSeconds / 60)).padStart(2, '0');
+                const secs = String(gameData.timerSeconds % 60).padStart(2, '0');
+                document.getElementById('timer-display').textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function showStage(stageNum) {
+            gameData.stage = stageNum;
+            document.getElementById('current-sector-num').textContent = stageNum;
+
+            // Hide all stage panels
+            document.querySelectorAll('.stage-panel').forEach(p => p.classList.add('hidden'));
+
+            // Status Indicators
+            for (let i = 1; i <= 3; i++) {
+                const ind = document.getElementById(`ind-stage${i}`);
+                if (i < stageNum) {
+                    ind.className = 'w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500 text-emerald-400 flex items-center justify-center text-xs font-bold';
+                    ind.innerHTML = '<i class="fa-solid fa-check"></i>';
+                } else if (i === stageNum) {
+                    ind.className = 'w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 text-cyan-400 flex items-center justify-center text-xs font-bold ring-2 ring-cyan-400/50';
+                } else {
+                    ind.className = 'w-8 h-8 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center text-xs font-bold text-slate-400';
+                }
+            }
+
+            if (stageNum === 1) {
+                document.getElementById('stage-1-panel').classList.remove('hidden');
+                document.getElementById('current-sector-title').textContent = 'INITIAL /R/ TERMINAL';
+            } else if (stageNum === 2) {
+                document.getElementById('stage-2-panel').classList.remove('hidden');
+                document.getElementById('current-sector-title').textContent = 'MEDIAL /R/ CIRCUIT';
+            } else if (stageNum === 3) {
+                document.getElementById('stage-3-panel').classList.remove('hidden');
+                document.getElementById('current-sector-title').textContent = 'FINAL /R/ OVERRIDE';
+            }
+
+            updateTargetTexts();
+            hideFeedback();
+        }
+
+        function updateTargetTexts() {
+            if (gameData.mode === 'words') {
+                document.getElementById('s1-target-text').textContent = 'Words: Rocket - Rabbit - Ring - Radar';
+                document.getElementById('s2-target-text').textContent = 'Words: Camera - Parrot - Mirror';
+                document.getElementById('s3-target-text').textContent = 'Words: Car - Star - Door - Guitar';
+            } else {
+                document.getElementById('s1-target-text').textContent = `"${gameData.stage1.sentence}"`;
+                document.getElementById('s2-target-text').textContent = `"${gameData.stage2.sentence}"`;
+                document.getElementById('s3-target-text').textContent = `"${gameData.stage3.sentence}"`;
+            }
+        }
+
+        /* STAGE 1: INITIAL /R/ LOGIC */
+        function renderStage1Tiles() {
+            const container = document.getElementById('s1-tiles-grid');
+            container.innerHTML = '';
+            
+            // Shuffle
+            const items = [...gameData.stage1.words].sort(() => Math.random() - 0.5);
+
+            items.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-slate-950 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500 p-4 rounded-xl text-center flex flex-col items-center justify-center gap-1 transition-all group';
+                btn.innerHTML = `
+                    <span class="text-sm font-bold text-white group-hover:text-cyan-400">${item.word}</span>
+                    <span class="text-xs text-slate-500">Key: [${item.code}]</span>
+                `;
+                btn.addEventListener('click', () => handleStage1TileClick(item, btn));
+                container.appendChild(btn);
+            });
+        }
+
+        function handleStage1TileClick(item, buttonEl) {
+            if (selectedS1Tiles.includes(item.word)) return;
+
+            selectedS1Tiles.push(item.word);
+            buttonEl.classList.add('neon-glow-cyan', 'border-cyan-400', 'bg-cyan-950/40');
+
+            // Build code display
+            let currentCode = selectedS1Tiles.map(w => {
+                const found = gameData.stage1.words.find(obj => obj.word === w);
+                return found ? found.code : '';
+            }).join('');
+
+            document.getElementById('s1-code-display').textContent = currentCode.padEnd(4, '-');
+
+            // Model pronunciation on click
+            speakText(item.word);
+        }
+
+        function checkStage1() {
+            const currentCode = selectedS1Tiles.map(w => {
+                const found = gameData.stage1.words.find(obj => obj.word === w);
+                return found ? found.code : '';
+            }).join('');
+
+            if (currentCode === gameData.stage1.targetCode) {
+                showFeedback(true, 'INITIAL /R/ DECRYPTION ACCEPTED! Accessing Sector 2...');
+                setTimeout(() => showStage(2), 1500);
+            } else {
+                showFeedback(false, 'INCORRECT KEYCODE SEQUENCE. Practice saying initial /r/ words and select in order!');
+                selectedS1Tiles = [];
+                document.getElementById('s1-code-display').textContent = '----';
+                renderStage1Tiles();
+            }
+        }
+
+        /* STAGE 2: MEDIAL /R/ LOGIC */
+        function renderStage2Nodes() {
+            const container = document.getElementById('s2-nodes-container');
+            container.innerHTML = '';
+
+            gameData.stage2.nodes.forEach(node => {
+                const div = document.createElement('div');
+                div.className = 'bg-slate-950 border border-slate-800 p-4 rounded-xl flex justify-between items-center cursor-pointer hover:border-purple-500 transition-all';
+                div.innerHTML = `
+                    <div>
+                        <div class="font-bold text-white text-base">${node.name}</div>
+                        <div class="text-xs text-slate-500">${node.text}</div>
+                    </div>
+                    <div class="status-icon w-6 h-6 rounded-full border border-slate-700 flex items-center justify-center text-xs text-slate-500">
+                        <i class="fa-solid fa-power-off"></i>
+                    </div>
+                `;
+
+                div.addEventListener('click', () => {
+                    speakText(node.name);
+                    if (node.isMedial) {
+                        if (!activatedS2Nodes.has(node.name)) {
+                            activatedS2Nodes.add(node.name);
+                            div.classList.add('neon-glow-purple', 'border-purple-500');
+                            div.querySelector('.status-icon').className = 'status-icon w-6 h-6 rounded-full bg-purple-500 text-slate-950 flex items-center justify-center text-xs font-bold';
+                            div.querySelector('.status-icon').innerHTML = '<i class="fa-solid fa-check"></i>';
+                        }
+                    } else {
+                        showFeedback(false, `"${node.name}" does not contain the medial /r/ target sound!`);
+                    }
+
+                    document.getElementById('s2-power-status').textContent = `${activatedS2Nodes.size}/3 Activated`;
+                });
+
+                container.appendChild(div);
+            });
+        }
+
+        function checkStage2() {
+            if (activatedS2Nodes.size === 3) {
+                showFeedback(true, 'MEDIAL /R/ CIRCUIT FULLY ENERGIZED! Opening Master Override...');
+                setTimeout(() => showStage(3), 1500);
+            } else {
+                showFeedback(false, 'CIRCUIT INCOMPLETE. Find and pronounce all 3 medial /r/ nodes!');
+            }
+        }
+
+        /* STAGE 3: FINAL /R/ LOGIC */
+        function renderStage3Cards() {
+            const container = document.getElementById('s3-cards-container');
+            container.innerHTML = '';
+
+            // Duplicate to create pairs
+            let cardDeck = [];
+            gameData.stage3.pairs.forEach(p => {
+                cardDeck.push({ ...p, id: p.word + '-1' });
+                cardDeck.push({ ...p, id: p.word + '-2' });
+            });
+
+            cardDeck.sort(() => Math.random() - 0.5);
+
+            cardDeck.forEach(card => {
+                const cardEl = document.createElement('button');
+                cardEl.className = 'bg-slate-950 border border-slate-800 p-4 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-emerald-500 transition-all text-center group';
+                cardEl.dataset.word = card.word;
+                cardEl.innerHTML = `
+                    <i class="fa-solid ${card.icon} text-2xl text-slate-500 group-hover:text-emerald-400"></i>
+                    <span class="text-sm font-bold text-white">${card.word}</span>
+                `;
+
+                cardEl.addEventListener('click', () => handleStage3CardClick(card, cardEl));
+                container.appendChild(cardEl);
+            });
+        }
+
+        function handleStage3CardClick(card, cardEl) {
+            if (matchedS3Pairs.has(card.word) || cardEl.classList.contains('active-card')) return;
+
+            speakText(card.word);
+
+            if (!s3SelectedCard) {
+                s3SelectedCard = { card, el: cardEl };
+                cardEl.classList.add('active-card', 'border-emerald-400', 'bg-emerald-950/40');
+            } else {
+                if (s3SelectedCard.card.word === card.word && s3SelectedCard.card.id !== card.id) {
+                    // Match found
+                    matchedS3Pairs.add(card.word);
+                    cardEl.classList.add('border-emerald-400', 'bg-emerald-950/60');
+                    s3SelectedCard.el.classList.add('border-emerald-400', 'bg-emerald-950/60');
+                    s3SelectedCard = null;
+
+                    if (matchedS3Pairs.size === gameData.stage3.pairs.length) {
+                        showFeedback(true, 'ALL FINAL /R/ PHONEMES MATCHED & PRONOUNCED!');
+                    }
+                } else {
+                    // Miss
+                    cardEl.classList.add('border-red-500');
+                    setTimeout(() => {
+                        cardEl.classList.remove('border-red-500');
+                        if (s3SelectedCard) {
+                            s3SelectedCard.el.classList.remove('active-card', 'border-emerald-400', 'bg-emerald-950/40');
+                            s3SelectedCard = null;
+                        }
+                    }, 800);
+                }
+            }
+        }
+
+        function checkStage3() {
+            if (matchedS3Pairs.size === gameData.stage3.pairs.length) {
+                clearInterval(gameData.timerInterval);
+                document.getElementById('screen-gameplay').classList.add('hidden');
+                document.getElementById('screen-victory').classList.remove('hidden');
+                document.getElementById('final-time-display').textContent = document.getElementById('timer-display').textContent;
+                
+                // Trigger celebratory confetti
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+            } else {
+                showFeedback(false, 'MASTER OVERRIDE LOCKED. Practice speaking and matching all Final /r/ cards!');
+            }
+        }
+
+        function speakCurrentTarget() {
+            let text = '';
+            if (gameData.stage === 1) {
+                text = gameData.mode === 'words' ? 'Rocket, Rabbit, Ring, Radar' : gameData.stage1.sentence;
+            } else if (gameData.stage === 2) {
+                text = gameData.mode === 'words' ? 'Camera, Parrot, Mirror' : gameData.stage2.sentence;
+            } else {
+                text = gameData.mode === 'words' ? 'Car, Star, Door, Guitar, Tiger, Tower' : gameData.stage3.sentence;
+            }
+            speakText(text);
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Stop ongoing
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9; // Slightly slower for speech therapy modeling
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function toggleAudioRecording() {
+            const btn = document.getElementById('btn-record-audio');
+            const dot = document.getElementById('record-dot');
+            const badge = document.getElementById('speech-feedback-badge');
+
+            if (!isRecording) {
+                // Request microphone permissions
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ audio: true })
+                        .then(stream => {
+                            isRecording = true;
+                            mediaRecorder = new MediaRecorder(stream);
+                            audioChunks = [];
+
+                            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                            mediaRecorder.onstop = () => {
+                                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                                const audioUrl = URL.createObjectURL(audioBlob);
+                                const audio = new Audio(audioUrl);
+                                audio.play(); // Playback self-recording
+                                badge.textContent = 'Playback Self Check...';
+                                badge.className = 'text-xs font-semibold text-emerald-400 px-2 py-1 rounded bg-emerald-950/60 border border-emerald-800';
+                            };
+
+                            mediaRecorder.start();
+                            dot.classList.remove('hidden');
+                            btn.classList.add('bg-red-950', 'text-red-400');
+                            badge.textContent = 'Listening / Recording...';
+                            badge.className = 'text-xs font-semibold text-red-400 px-2 py-1 rounded bg-red-950/60 border border-red-800';
+                        })
+                        .catch(err => {
+                            badge.textContent = 'Mic Access Denied / Unavailable';
+                            badge.className = 'text-xs font-semibold text-amber-400 px-2 py-1 rounded bg-amber-950/60 border border-amber-800';
+                        });
+                } else {
+                    badge.textContent = 'Mic Not Supported on Browser';
+                }
+            } else {
+                // Stop recording
+                isRecording = false;
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+                dot.classList.add('hidden');
+                btn.classList.remove('bg-red-950', 'text-red-400');
+            }
+        }
+
+        function showFeedback(isSuccess, message) {
+            const el = document.getElementById('game-feedback-msg');
+            const icon = document.getElementById('feedback-icon');
+            const text = document.getElementById('feedback-text');
+
+            el.classList.remove('hidden', 'bg-red-950/80', 'border-red-500/50', 'text-red-300', 'bg-emerald-950/80', 'border-emerald-500/50', 'text-emerald-300');
+
+            if (isSuccess) {
+                el.classList.add('bg-emerald-950/80', 'border-emerald-500/50', 'text-emerald-300');
+                icon.className = 'fa-solid fa-circle-check text-lg text-emerald-400';
+            } else {
+                el.classList.add('bg-red-950/80', 'border-red-500/50', 'text-red-300');
+                icon.className = 'fa-solid fa-triangle-exclamation text-lg text-red-400';
+            }
+
+            text.textContent = message;
+        }
+
+        function hideFeedback() {
+            document.getElementById('game-feedback-msg').classList.add('hidden');
+        }
+
+        function resetGame() {
+            selectedS1Tiles = [];
+            activatedS2Nodes.clear();
+            matchedS3Pairs.clear();
+            s3SelectedCard = null;
+
+            document.getElementById('s1-code-display').textContent = '----';
+            document.getElementById('s2-power-status').textContent = '0/3 Activated';
+
+            renderStage1Tiles();
+            renderStage2Nodes();
+            renderStage3Cards();
+
+            document.getElementById('screen-victory').classList.add('hidden');
+            document.getElementById('screen-welcome').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
